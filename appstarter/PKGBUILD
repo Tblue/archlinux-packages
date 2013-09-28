@@ -1,0 +1,18 @@
+# Contributor: Tilman Blumenbach <tilman@ax86.net>
+
+pkgname=appstarter
+pkgver=0.4
+pkgrel=1
+pkgdesc="Wraps programs with a startup script"
+arch=(any)
+url=""
+license=(unknown)
+replaces=(startawesome)
+source=(appstarter.sh)
+
+build()
+{
+	install -Dm 755 "${srcdir}/appstarter.sh" "${pkgdir}/usr/bin/appstarter"
+}
+
+md5sums=('5f250bd1840e1ec5c4b51030f6095ea6')
