@@ -1,0 +1,152 @@
+--- evrouter-0.4.orig/src/evrouter.c	2009-03-10 00:09:29.000000000 +0100
++++ evrouter-0.4/src/evrouter.c	2011-11-29 17:51:02.089774287 +0100
+@@ -294,7 +294,8 @@
+ 
+ 		else if ((ev->type == EV_SW) && (r->type == evt_sw) &&
+ 			(r->arg1 == ev->code) && (r->arg2 == ev->value)) {
+-			printf ("MATCHED SW type=%d, value=%d\n", ev->type, ev->value, r->arg1);
++			/*printf ("MATCHED SW type=%d, value=%d, arg1=%d, arg2=%d\n",
++				ev->type, ev->value, r->arg1, r->arg2);*/
+ 		}
+ 
+ 		else continue;
+@@ -385,7 +386,7 @@
+ 	int      i, j;
+ 	int      maxfd = 0;
+ 	int      sel;
+-	fd_set   readset, errset;
++	fd_set   readset;
+ 
+ 	/* Get the maximum file descriptor */
+ 
+@@ -397,14 +398,21 @@
+ 
+ 	while (1) {
+ 		FD_ZERO (&readset);
+-		FD_ZERO (&errset);
+ 		for (i = 0; i < num_devs; i++) {
+ 			if (devs [i].fd < 0) continue;
+-			if (devs [i].filename) FD_SET (devs [i].fd, &readset);
+-			if (devs [i].filename) FD_SET (devs [i].fd, &errset);
++
++			FD_SET (devs [i].fd, &readset);
+ 		}
+ 
+-		sel = select (maxfd + 1, &readset, NULL, &errset, NULL);
++		do {
++			sel = select (maxfd + 1, &readset, NULL, NULL, NULL);
++		} while (sel < 0 && errno == EINTR);
++
++		if (sel < 0) {
++			fprintf(stderr, "%s: select() failed with error %d (%s)!\n",
++				progname, errno, strerror( errno ) );
++			continue;
++		}
+ 
+ 		/* Read X Events */
+ 
+@@ -420,7 +428,7 @@
+ 			int nb = 0;
+ 			struct input_event ev [NEV];
+ 
+-			if (devs [i].filename == NULL) continue;
++			if (devs [i].fd < 0) continue;
+ 			if (!FD_ISSET (devs [i].fd, &readset)) continue;
+ 
+ 			nb = read (devs [i].fd, ev, sizeof (struct input_event) * NEV);
+@@ -428,6 +436,9 @@
+ 			/* If an error occurs, remove the device. */
+ 
+ 			if (nb < 0) {
++				fprintf(stderr, "%s: Error %d (%s) on device %s (%s), removing.\n",
++					progname, errno, strerror(errno), devs[i].filename, devs[i].devname);
++
+ 				close (devs[i].fd);
+ 				devs[i].fd = -1;
+ 				continue;
+@@ -492,49 +503,67 @@
+ 
+ 	/* Or start the daemon? */
+ 		
+-		fd = open (fname, O_EXCL | O_CREAT | O_RDWR, 0600);
+-		if (fd < 0) {
+-			fprintf (stderr, "%s: error creating %s: %s\n\n"
+-				 "Please make sure this file can be created, no other instance of\n"
+-				 "this program is running on X display %s. Remove the file\n"
+-				 "%s if no other instance is running.\n",
+-				 progname, fname, strerror (errno), getenv ("DISPLAY"), fname);
++		fd = open (fname, O_CREAT | O_RDWR, 0600);
++
++		if(fd < 0) {
++			fprintf(stderr, "%s: error creating %s: %s.\n", progname, fname,
++				strerror(errno));
++			exit(1);
++		} else if (read(fd, s, sizeof(s)) && sscanf(s, "%d", &pid) && ! kill(pid, 0)) {
++			fprintf (stderr, "%s: Another %s process seems to be running on X display\n"
++					"%s.\n\n"
++					"If process %d is not an %s process, delete the file\n"
++					"%s.\n",
++				progname, progname, getenv ("DISPLAY"), pid, progname, fname);
+ 			exit (1);
+ 		}
++
++		lseek(fd, 0, SEEK_SET);
+ 	}
+ 
+ 	/* Fork? */
+ 
+ 	if (!foreground) {
+ 		pid = fork();
+-		if (pid == 0) {
+-			atexit (rmlock);
+-			signal (SIGINT, forced_exit);
+-			signal (SIGTERM, forced_exit);
+-			signal (SIGKILL, forced_exit);
+-		} else if (pid < 0) {
++		if (pid < 0) {
+ 			fprintf (stderr, "%s: failed to fork off daemon: %s\n",
+ 				 progname, strerror (errno));
+ 			exit (1);
+ 		}
+-	} else pid = getpid();
++	} else {
++		pid = getpid();
++	}
+ 
+-	/* Write our PID to a run file */
++	/* Set up signal handlers. */
++	if( ! pid || foreground ) {
++		/* Child or running in foreground. */
++		atexit (rmlock);
++		signal (SIGINT, forced_exit);
++		signal (SIGTERM, forced_exit);
++		signal (SIGKILL, forced_exit);
++	}
+ 
++	/* Write our PID to a run file */
+ 	if (pid) {
++		/* Parent or running in foreground. */
+ 		snprintf (s, sizeof (s), "%d\n", pid);
+ 		write (fd, s, strlen (s));
++		close(fd);
+ 
+ 		/* The parent process exits here (if running as a daemon) */
+-
+-		if (!foreground) exit (0);
++		if (!foreground) {
++			if (verbose) printf( "Daemon PID: %d\n", pid );
++			exit (0);
++		}
+ 	}
+ }
+ 
+ 
+ int main (int argc, char **argv)
+ {
+-	progname = argv [0];
++	char *pos = strrchr( argv[0], '/' );
++	progname = pos ? pos + 1 : argv [0];
++
+ 	cmdline_parse (argc, argv);
+ 
+ 	if (sepuku == 0) {
