@@ -1,6 +1,6 @@
 # Maintainer: Tilman Blumenbach <tilman+aur AT ax86 DOT net>
-pkgname=vba-m-wx-svn
-_svndir=vba-m-trunk
+pkgname=vbam-wx-svn
+_svndir=vbam-trunk
 pkgver=1223
 pkgrel=1
 pkgdesc="Improved (Super) Game Boy Color/Advance emulator - wxWidgets GUI, SVN version"
