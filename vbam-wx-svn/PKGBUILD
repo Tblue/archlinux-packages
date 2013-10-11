@@ -11,7 +11,7 @@ depends=(zlib libpng mesa sdl sfml1.6 openal wxgtk
   hicolor-icon-theme desktop-file-utils xdg-utils)
 makedepends=(cmake subversion nasm imagemagick)
 conflicts=(vba-m-wx)
-install=vba-m.install
+install=vbam.install
 source=("${_svndir}::svn://svn.code.sf.net/p/vbam/code/trunk"
   sfml-build-fixes.patch
   missing-util-decl.patch)
