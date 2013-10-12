@@ -2,7 +2,7 @@
 pkgname=vbam-wx-svn
 _svndir=vbam-trunk
 pkgver=1223
-pkgrel=1
+pkgrel=2
 pkgdesc="Improved (Super) Game Boy Color/Advance emulator - wxWidgets GUI, SVN version"
 arch=(i686 x86_64)
 url="http://vba-m.com/"
