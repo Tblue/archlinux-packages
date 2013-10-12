@@ -1,6 +1,6 @@
 # makepkg directories
-/*/pkg
-/*/src
+/*/pkg/
+/*/src/
 
 # Built packages
 /*/*.pkg.tar
