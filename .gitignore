@@ -1,0 +1,10 @@
+# makepkg directories
+/*/pkg
+/*/src
+
+# Built packages
+/*/*.pkg.tar
+/*/*.pkg.tar.*
+
+# Package source tarballs
+/*/*.src.tar.gz
