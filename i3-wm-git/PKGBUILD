@@ -21,6 +21,12 @@ options=('docs' '!strip')
 source=('git://code.i3wm.org/i3')
 md5sums=('SKIP')
 
+pkgver() {
+  cd "$srcdir/$_pkgsourcename"
+
+  git describe --tags --always | tr ':-' _
+}
+
 build() {
   cd "$srcdir/$_pkgsourcename"
   
