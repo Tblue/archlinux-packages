@@ -18,7 +18,7 @@ optdepends=('dmenu: As menu.'
             'i3lock: For locking your screen.'
             'i3status: To display systeminformation with a bar.')
 options=('docs' '!strip')
-source=('git://code.i3wm.org/i3')
+source=('git://code.i3wm.org/i3#branch=next')
 md5sums=('SKIP')
 
 pkgver() {
