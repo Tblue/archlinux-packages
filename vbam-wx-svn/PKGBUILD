@@ -9,7 +9,7 @@ url="http://vba-m.com/"
 license=('GPL2')
 depends=(zlib libpng mesa sdl sfml1.6 openal wxgtk2.8
   hicolor-icon-theme desktop-file-utils xdg-utils)
-makedepends=(cmake subversion nasm imagemagick)
+makedepends=(cmake subversion nasm imagemagick zip)
 conflicts=(vba-m-wx vba-m-wx-svn)
 replaces=(vba-m-wx-svn)
 provides=("vba-m-wx-svn=${pkgver}")
