@@ -2,7 +2,7 @@
 
 pkgname=appstarter
 pkgver=0.4
-pkgrel=1
+pkgrel=2
 pkgdesc="Wraps programs with a startup script"
 arch=(any)
 url=""
@@ -10,7 +10,7 @@ license=(unknown)
 replaces=(startawesome)
 source=(appstarter.sh)
 
-build()
+package()
 {
 	install -Dm 755 "${srcdir}/appstarter.sh" "${pkgdir}/usr/bin/appstarter"
 }
