@@ -1,0 +1,50 @@
+# Maintainer: Tilman Blumenbach <tilman+aur@ax86.net>
+
+pkgname=ultrastardx
+pkgver=2017.8.0
+pkgrel=1
+pkgdesc="Free and open source karaoke singing game"
+url="https://usdx.eu/"
+license=(GPL2)
+source=(
+    "repo::git+https://github.com/UltraStar-Deluxe/USDX.git#tag=v${pkgver:?}"
+)
+sha384sums=('SKIP')
+arch=(x86_64)
+
+# NB: libbass is not needed by the Linux build.
+depends=(
+    sdl2_image ffmpeg2.8 sqlite portaudio lua opencv projectm
+    ttf-font
+)
+makedepends=("fpc>=3.0.0" git)
+
+
+prepare() {
+    local GCC_VERSION="$(pacman -Sp --print-format "%v" gcc \
+        | sed 's@^\([0-9]\{1,\}:\)\{,1\}\([^:-]\{1,\}\).*@\2@')"
+    [ -z "${GCC_VERSION?}" ] && exit 2
+
+    local PFLAGS_EXTRA="-Fl/usr/lib/gcc/${CHOST:?}/${GCC_VERSION:?}"
+    if [ "${LDFLAGS:0:4}" = "-Wl," ]; then
+        local linker_flags="${LDFLAGS:3}"
+        PFLAGS_EXTRA="${PFLAGS_EXTRA?} ${linker_flags//,/ -k}"
+        unset LDFLAGS
+    fi
+
+    cd repo
+    ./autogen.sh
+    ./configure --prefix=/usr --with-libprojectM \
+        PKG_CONFIG_PATH=/usr/lib/ffmpeg2.8/pkgconfig \
+        PFLAGS_EXTRA="${PFLAGS_EXTRA:?}"
+}
+
+build() {
+    cd repo
+    make
+}
+
+package() {
+    cd repo
+    make DESTDIR="${pkgdir:?}" install
+}
