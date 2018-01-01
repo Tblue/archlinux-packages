@@ -2,7 +2,7 @@
 
 pkgname=ultrastardx
 pkgver=2017.8.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Free and open source karaoke singing game"
 url="https://usdx.eu/"
 license=(GPL2)
@@ -14,7 +14,7 @@ arch=(x86_64)
 
 # NB: libbass is not needed by the Linux build.
 depends=(
-    sdl2_image ffmpeg2.8 sqlite portaudio lua opencv projectm
+    sdl2_image ffmpeg2.8 sqlite portaudio pcre lua opencv projectm
     ttf-font
 )
 makedepends=("fpc>=3.0.0" git)
