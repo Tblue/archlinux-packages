@@ -7,7 +7,7 @@ pkgdesc="Free and open source karaoke singing game"
 url="https://usdx.eu/"
 license=(GPL2)
 source=(
-    "git+https://github.com/UltraStar-Deluxe/USDX.git#tag=v${pkgver:?}"
+    "${pkgname:?}::git+https://github.com/UltraStar-Deluxe/USDX.git#tag=v${pkgver:?}"
 )
 sha384sums=('SKIP')
 arch=(x86_64)
@@ -31,7 +31,7 @@ prepare() {
         unset LDFLAGS
     fi
 
-    cd USDX
+    cd "${pkgname:?}"
     ./autogen.sh
     ./configure --prefix=/usr --with-libprojectM \
         CC=gcc CXX="g++" \
@@ -40,11 +40,11 @@ prepare() {
 }
 
 build() {
-    cd USDX
+    cd "${pkgname:?}"
     make
 }
 
 package() {
-    cd USDX
+    cd "${pkgname:?}"
     make DESTDIR="${pkgdir:?}" install
 }
