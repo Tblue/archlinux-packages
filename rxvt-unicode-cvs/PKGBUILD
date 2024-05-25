@@ -1,4 +1,4 @@
-# vim: ts=2 sw=2 et:
+# vim: ts=2 sw=2 et tw=120:
 #
 # Maintainer: George Rawlinson <grawlinson@archlinux.org>
 # Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
@@ -9,9 +9,9 @@
 
 pkgbase=rxvt-unicode-cvs
 pkgname=('rxvt-unicode-cvs' 'rxvt-unicode-terminfo-cvs')
-pkgver=20240204.164417
+pkgver=9.31.r20240204164417
 pkgrel=1
-epoch=1
+epoch=2
 arch=('x86_64')
 url='http://software.schmorp.de/pkg/rxvt-unicode.html'
 license=('GPL')
@@ -41,16 +41,34 @@ prepare() {
   fi
 }
 
-pkgver() {
+pkgver() (
+  set -o pipefail
   cd "${_cvsmod?}"
 
-  (
-    set -o pipefail
-    # NB: "cvs log" prints UTC time.
-    cvs -Q log -r -s Exp -S | grep -o '^date: [^;]*' | LC_ALL=C sort | tail -n 1 | cut -d ' ' -f 2-3 \
-      | tr -d :- | tr ' ' .
-  )
-}
+  # First, we get the actual release version number:
+  vers=$(awk '$1 == "#define" && $2 == "VERSION" { gsub(/"/, ""); print $3 }' src/version.h)
+  # Let's make sure it's not empty.
+  [[ ${vers?} ]]
+  # OK, print it!
+  printf '%s' "${vers?}"
+
+  # Now comes the CVS "revision". There are no per-module revisions in CVS, so just use the newest commit date.
+  #
+  # NB: "cvs log" prints UTC time.
+  #
+  # The format I came up with is (with inspiration from the Arch wiki):
+  #   - ".r" followed by the UTC timestamp of the newest commit, in YYYYmmddHHMMSS format
+  #   - Optionally: "." followed by the number of commits with the same timestamp. Omitted if there is only a single
+  #     commit with the timestamp.
+  rev_cnt=$(cvs -Q log -r -s Exp -S | grep -o '^date: [^;]*' | LC_ALL=C sort | LC_ALL=C uniq -c | tail -n 1)
+  read -r cnt rev <<<"${rev_cnt?}"
+
+  printf '.r%s' "$(cut -d ' ' -f 2-3 <<<"${rev?}" | tr -d ' :-')"
+
+  if [[ ${cnt?} -gt 1 ]]; then
+    echo ".${cnt?}"
+  fi
+)
 
 build() {
   cd "${_cvsmod?}"
