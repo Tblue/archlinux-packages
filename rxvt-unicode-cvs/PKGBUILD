@@ -26,7 +26,7 @@ makedepends=(
   'libptytty'
   'cvs'
 )
-_cvsurl=':pserver:anonymous@cvs.schmorp.de/schmorpforge'
+_cvsurl=':pserver:anonymous:@cvs.schmorp.de/schmorpforge'
 _cvsmod='rxvt-unicode'
 source=('urxvt.desktop'
         'urxvtc.desktop'
